@@ -181,6 +181,43 @@ class InvidiousApi(
         items
     }
 
+    suspend fun getComments(videoId: String): List<com.cineflow.tube.data.model.CommentItem> = withContext(Dispatchers.IO) {
+        val url = "$currentBaseUrl/api/v1/comments/$videoId"
+        try {
+            val request = Request.Builder().url(url).build()
+            val response = client.newCall(request).execute()
+            if (!response.isSuccessful) return@withContext emptyList()
+
+            val body = response.body?.string() ?: return@withContext emptyList()
+            val root = JSONObject(body)
+            val commentsArray = root.optJSONArray("comments") ?: JSONArray()
+            val items = mutableListOf<com.cineflow.tube.data.model.CommentItem>()
+
+            for (i in 0 until commentsArray.length()) {
+                val obj = commentsArray.getJSONObject(i)
+                val authorThumbs = obj.optJSONArray("authorThumbnails")
+                val avatar = authorThumbs?.optJSONObject(0)?.optString("url")
+
+                items.add(
+                    com.cineflow.tube.data.model.CommentItem(
+                        id = obj.optString("commentId", "inv_comment_$i"),
+                        author = obj.optString("author", "Anonymous"),
+                        authorAvatarUrl = avatar,
+                        content = obj.optString("content", ""),
+                        publishedTime = obj.optString("publishedText", ""),
+                        likeCount = obj.optLong("likeCount", 0),
+                        replyCount = obj.optLong("replyCount", 0),
+                        isHearted = obj.optBoolean("isHearted", false),
+                        isPinned = obj.optBoolean("isPinned", false)
+                    )
+                )
+            }
+            items
+        } catch (_: Exception) {
+            emptyList()
+        }
+    }
+
     private fun formatDuration(seconds: Long): String {
         if (seconds <= 0) return ""
         val h = seconds / 3600

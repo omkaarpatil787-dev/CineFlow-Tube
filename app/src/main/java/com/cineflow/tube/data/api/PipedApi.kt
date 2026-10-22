@@ -222,6 +222,40 @@ class PipedApi(
         items
     }
 
+    suspend fun getComments(videoId: String): List<com.cineflow.tube.data.model.CommentItem> = withContext(Dispatchers.IO) {
+        val url = "$currentBaseUrl/comments/$videoId"
+        try {
+            val request = Request.Builder().url(url).build()
+            val response = client.newCall(request).execute()
+            if (!response.isSuccessful) return@withContext emptyList()
+
+            val body = response.body?.string() ?: return@withContext emptyList()
+            val root = JSONObject(body)
+            val commentsArray = root.optJSONArray("comments") ?: JSONArray()
+            val items = mutableListOf<com.cineflow.tube.data.model.CommentItem>()
+
+            for (i in 0 until commentsArray.length()) {
+                val obj = commentsArray.getJSONObject(i)
+                items.add(
+                    com.cineflow.tube.data.model.CommentItem(
+                        id = obj.optString("commentId", "comment_$i"),
+                        author = obj.optString("author", "Anonymous"),
+                        authorAvatarUrl = obj.optString("thumbnail", null),
+                        content = obj.optString("commentText", ""),
+                        publishedTime = obj.optString("commentedTime", ""),
+                        likeCount = obj.optLong("likeCount", 0),
+                        replyCount = obj.optLong("replyCount", 0),
+                        isHearted = obj.optBoolean("hearted", false),
+                        isPinned = obj.optBoolean("pinned", false)
+                    )
+                )
+            }
+            items
+        } catch (_: Exception) {
+            emptyList()
+        }
+    }
+
     private fun formatDuration(seconds: Long): String {
         if (seconds <= 0) return ""
         val h = seconds / 3600

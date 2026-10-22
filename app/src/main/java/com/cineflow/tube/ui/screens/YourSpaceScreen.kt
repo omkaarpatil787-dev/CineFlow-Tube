@@ -43,6 +43,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.cineflow.tube.data.model.StreamItem
 import com.cineflow.tube.data.repository.BackendType
+import com.cineflow.tube.data.repository.CineFlowDownloadManager
 import com.cineflow.tube.data.repository.StreamingRepository
 import com.cineflow.tube.player.PlaybackController
 import com.cineflow.tube.player.TimelineStyle
@@ -56,6 +57,7 @@ fun YourSpaceScreen(
     repository: StreamingRepository,
     listState: LazyListState,
     savedVideos: List<StreamItem> = emptyList(),
+    downloadManager: CineFlowDownloadManager? = null,
     currentThemeMode: AppThemeMode,
     enableDynamicColor: Boolean,
     reducedMotion: Boolean,
@@ -183,6 +185,23 @@ fun YourSpaceScreen(
                                     }
                                 }
                             }
+                        }
+                    }
+                }
+            }
+
+            // Downloads Section (Phase 4)
+            if (downloadManager != null) {
+                item {
+                    FrostedSurface(
+                        shape = RoundedCornerShape(22.dp),
+                        backgroundColor = CineFlow.tokens.surface
+                    ) {
+                        Column(modifier = Modifier.padding(18.dp)) {
+                            DownloadsSection(
+                                downloadManager = downloadManager,
+                                onPlayOffline = { /* offline playback handled in MainActivity */ }
+                            )
                         }
                     }
                 }

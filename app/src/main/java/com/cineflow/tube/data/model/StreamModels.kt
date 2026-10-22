@@ -72,7 +72,43 @@ data class CommentItem(
     val publishedTime: String = "",
     val likeCount: Long = 0,
     val replyCount: Long = 0,
-    val isHearted: Boolean = false
+    val isHearted: Boolean = false,
+    val isPinned: Boolean = false
+)
+
+@Serializable
+data class CustomPlaylist(
+    val id: String,
+    val title: String,
+    val description: String = "",
+    val thumbnailUrl: String = "",
+    val items: List<StreamItem> = emptyList(),
+    val createdAt: Long = System.currentTimeMillis()
+)
+
+@Serializable
+data class DownloadItem(
+    val id: String,
+    val title: String,
+    val uploaderName: String,
+    val thumbnailUrl: String,
+    val quality: String,
+    val format: String = "MP4",
+    val bytesDownloaded: Long = 0,
+    val totalBytes: Long = 0,
+    val isCompleted: Boolean = false,
+    val localFilePath: String? = null,
+    val timestamp: Long = System.currentTimeMillis()
+)
+
+@Serializable
+data class StreamingInstance(
+    val url: String,
+    val name: String,
+    val type: String, // "PIPED" or "INVIDIOUS"
+    val pingMs: Long = -1,
+    val isHealthy: Boolean = false,
+    val isCustom: Boolean = false
 )
 
 @Serializable
@@ -96,16 +132,6 @@ data class StreamDetails(
     val subtitles: List<SubtitleTrack> = emptyList(),
     val chapters: List<Chapter> = emptyList(),
     val sponsorSegments: List<SponsorSegment> = emptyList(),
+    val comments: List<CommentItem> = emptyList(),
     val relatedVideos: List<StreamItem> = emptyList()
-)
-
-@Serializable
-data class ChannelDetails(
-    val id: String,
-    val name: String,
-    val avatarUrl: String? = null,
-    val bannerUrl: String? = null,
-    val subscriberCount: String = "",
-    val description: String = "",
-    val videos: List<StreamItem> = emptyList()
 )

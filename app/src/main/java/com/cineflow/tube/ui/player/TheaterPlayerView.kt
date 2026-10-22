@@ -96,6 +96,10 @@ fun TheaterPlayerView(
     var isLiked by remember { mutableStateOf(false) }
     var isSaved by remember { mutableStateOf(false) }
 
+    // Sheet overlays (Phase 2 + 3)
+    var isCommentsOpen by remember { mutableStateOf(false) }
+    var isQueueOpen by remember { mutableStateOf(false) }
+
     fun showToast(msg: String) {
         toastMessage = msg
     }
@@ -313,7 +317,9 @@ fun TheaterPlayerView(
                                         isSaved = !isSaved
                                         showToast(if (isSaved) "Saved to library" else "Removed from library")
                                     },
-                                    onSponsorBlockClick = { showToast("SponsorBlock active") }
+                                    onSponsorBlockClick = { showToast("SponsorBlock active") },
+                                    onOpenComments = { isCommentsOpen = true },
+                                    onOpenQueue = { isQueueOpen = true }
                                 )
                             }
 
@@ -405,7 +411,9 @@ fun TheaterPlayerView(
                                     isSaved = !isSaved
                                     showToast(if (isSaved) "Saved to library" else "Removed from library")
                                 },
-                                onSponsorBlockClick = { showToast("SponsorBlock active") }
+                                onSponsorBlockClick = { showToast("SponsorBlock active") },
+                                onOpenComments = { isCommentsOpen = true },
+                                onOpenQueue = { isQueueOpen = true }
                             )
 
                             Spacer(modifier = Modifier.height(20.dp))
@@ -441,6 +449,24 @@ fun TheaterPlayerView(
             onToast = { showToast(it) },
             initialPicker = initialSheetPicker
         )
+
+        // Comments Sheet (Phase 2)
+        CommentsBottomSheet(
+            comments = stream.comments,
+            isOpen = isCommentsOpen,
+            onDismiss = { isCommentsOpen = false }
+        )
+
+        // Queue Sheet (Phase 3)
+        QueueBottomSheet(
+            isOpen = isQueueOpen,
+            onDismiss = { isQueueOpen = false },
+            onJumpTo = { item ->
+                // Jump is handled inside QueueBottomSheet via QueueManager.jumpTo()
+                // The onQueueAdvance callback in PlaybackController will trigger the new stream load
+                PlaybackController._onQueueAdvance?.invoke(item)
+            }
+        )
     }
 }
 
@@ -458,7 +484,9 @@ private fun WatchDetailsSection(
     onLikeClick: () -> Unit,
     onShareClick: () -> Unit,
     onSaveClick: () -> Unit,
-    onSponsorBlockClick: () -> Unit
+    onSponsorBlockClick: () -> Unit,
+    onOpenComments: () -> Unit = {},
+    onOpenQueue: () -> Unit = {}
 ) {
     Column {
         // Video Title
@@ -571,6 +599,25 @@ private fun WatchDetailsSection(
                 text = "✦ SponsorBlock",
                 isSelected = true,
                 onClick = onSponsorBlockClick
+            )
+        }
+
+        Spacer(modifier = Modifier.height(10.dp))
+
+        // Secondary row: Comments and Queue triggers
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            ActionPill(
+                text = "💬 Comments" + if (stream.comments.isNotEmpty()) " · ${stream.comments.size}" else "",
+                onClick = onOpenComments,
+                modifier = Modifier.weight(1f)
+            )
+            ActionPill(
+                text = "▶ Queue",
+                onClick = onOpenQueue,
+                modifier = Modifier.weight(1f)
             )
         }
 
@@ -955,10 +1002,11 @@ private fun PlayerPillChip(
 private fun ActionPill(
     text: String,
     isSelected: Boolean = false,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     Box(
-        modifier = Modifier
+        modifier = modifier
             .clip(RoundedCornerShape(100.dp))
             .background(if (isSelected) CineFlow.tokens.ink else CineFlow.tokens.soft)
             .springPress(onClick = onClick)

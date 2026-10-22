@@ -5,11 +5,17 @@ import coil.ImageLoader
 import coil.ImageLoaderFactory
 import coil.disk.DiskCache
 import coil.memory.MemoryCache
+import com.cineflow.tube.data.repository.CineFlowDownloadManager
 
 class CineFlowApplication : Application(), ImageLoaderFactory {
 
+    /** App-scoped download manager – single instance shared via Application reference */
+    lateinit var downloadManager: CineFlowDownloadManager
+        private set
+
     override fun onCreate() {
         super.onCreate()
+        downloadManager = CineFlowDownloadManager(this)
     }
 
     override fun newImageLoader(): ImageLoader {

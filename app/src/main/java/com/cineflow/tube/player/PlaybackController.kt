@@ -7,6 +7,7 @@ import androidx.media3.common.MimeTypes
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
 import com.cineflow.tube.data.model.StreamDetails
+import com.cineflow.tube.data.model.StreamItem
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -60,8 +61,23 @@ object PlaybackController {
                 isBuffering = isBuffering,
                 durationMs = duration
             )
+
+            // Auto-advance queue when current video ends
+            if (playbackState == Player.STATE_ENDED) {
+                val nextItem = QueueManager.advanceToNext()
+                if (nextItem != null) {
+                    _onQueueAdvance?.invoke(nextItem)
+                }
+            }
         }
     }
+
+    /**
+     * Callback invoked when the queue auto-advances to the next stream.
+     * The host (MainActivity / TheaterPlayerView) must set this to trigger
+     * a new stream load without restarting the player engine from scratch.
+     */
+    var _onQueueAdvance: ((StreamItem) -> Unit)? = null
 
     fun attachPlayer(player: ExoPlayer) {
         exoPlayer = player

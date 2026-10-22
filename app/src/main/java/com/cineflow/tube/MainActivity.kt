@@ -35,9 +35,11 @@ import androidx.core.content.ContextCompat
 import androidx.media3.session.MediaController
 import androidx.media3.session.SessionToken
 import com.cineflow.tube.data.model.StreamItem
+import com.cineflow.tube.data.repository.CineFlowDownloadManager
 import com.cineflow.tube.data.repository.StreamingRepository
 import com.cineflow.tube.player.CineFlowPlaybackService
 import com.cineflow.tube.player.PlaybackController
+import com.cineflow.tube.player.QueueManager
 import com.cineflow.tube.ui.components.FrostedBottomDock
 import com.cineflow.tube.ui.components.FrostedNavRail
 import com.cineflow.tube.ui.components.NavDestination
@@ -83,6 +85,8 @@ class MainActivity : ComponentActivity() {
             var reducedMotion by rememberSaveable { mutableStateOf(false) }
             var showSplash by rememberSaveable { mutableStateOf(true) }
 
+            val downloadManager = (application as? CineFlowApplication)?.downloadManager
+
             CineFlowTheme(
                 themeMode = themeMode,
                 enableDynamicColor = enableDynamicColor,
@@ -100,6 +104,7 @@ class MainActivity : ComponentActivity() {
                     } else {
                         CineFlowAppRoot(
                             repository = repository,
+                            downloadManager = downloadManager,
                             themeMode = themeMode,
                             enableDynamicColor = enableDynamicColor,
                             reducedMotion = reducedMotion,
@@ -131,6 +136,7 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun CineFlowAppRoot(
     repository: StreamingRepository,
+    downloadManager: CineFlowDownloadManager? = null,
     themeMode: AppThemeMode,
     enableDynamicColor: Boolean,
     reducedMotion: Boolean,
@@ -173,6 +179,16 @@ fun CineFlowAppRoot(
         }
     }
 
+    // Wire queue auto-advance: when ExoPlayer ends, advance to next queued stream
+    PlaybackController._onQueueAdvance = { nextItem ->
+        coroutineScope.launch {
+            try {
+                val details = repository.getStreamDetails(nextItem.id)
+                PlaybackController.play(details)
+            } catch (_: Exception) { }
+        }
+    }
+
     BoxWithConstraints(modifier = Modifier.fillMaxSize().background(CineFlow.tokens.bg)) {
         val isTabletWide = maxWidth >= 760.dp
 
@@ -191,6 +207,7 @@ fun CineFlowAppRoot(
                         currentDestination = currentDestination,
                         isSearchActive = isSearchActive,
                         repository = repository,
+                        downloadManager = downloadManager,
                         themeMode = themeMode,
                         enableDynamicColor = enableDynamicColor,
                         reducedMotion = reducedMotion,
@@ -217,6 +234,7 @@ fun CineFlowAppRoot(
                     currentDestination = currentDestination,
                     isSearchActive = isSearchActive,
                     repository = repository,
+                    downloadManager = downloadManager,
                     themeMode = themeMode,
                     enableDynamicColor = enableDynamicColor,
                     reducedMotion = reducedMotion,
@@ -267,6 +285,7 @@ private fun DestinationContent(
     currentDestination: NavDestination,
     isSearchActive: Boolean,
     repository: StreamingRepository,
+    downloadManager: CineFlowDownloadManager? = null,
     themeMode: AppThemeMode,
     enableDynamicColor: Boolean,
     reducedMotion: Boolean,
@@ -319,6 +338,7 @@ private fun DestinationContent(
                 YourSpaceScreen(
                     repository = repository,
                     listState = yourSpaceListState,
+                    downloadManager = downloadManager,
                     currentThemeMode = themeMode,
                     enableDynamicColor = enableDynamicColor,
                     reducedMotion = reducedMotion,
