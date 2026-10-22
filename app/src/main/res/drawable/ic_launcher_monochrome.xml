@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="432"
+    android:viewportHeight="432">
+    <!-- Android 13+ Material You Dynamic Themed Icon Layer -->
+    <path
+        android:fillColor="#FF000000"
+        android:fillType="evenOdd"
+        android:pathData="M137,126 Q145,104 174,104 H258 Q287,104 295,126 H281 Q275,116 258,116 H174 Q157,116 151,126 Z M110,156 Q120,136 151,136 H281 Q312,136 322,156 H306 Q298,148 281,148 H151 Q134,148 126,156 Z M129,166 H303 Q352,166 352,215 V281 Q352,330 303,330 H129 Q80,330 80,281 V215 Q80,166 129,166 Z M188,196 Q165,182 165,211 V281 Q165,310 189,296 L256,257 Q280,243 256,228 Z" />
+</vector>

@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">CineFlow Tube</string>
+    <string name="nav_home">Home</string>
+    <string name="nav_shorts">Shorts</string>
+    <string name="nav_subscriptions">Subscriptions</string>
+    <string name="nav_you">You</string>
+    <string name="search_hint">Search videos…</string>
+</resources>
