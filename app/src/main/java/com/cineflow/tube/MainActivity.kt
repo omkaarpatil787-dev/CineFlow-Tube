@@ -86,6 +86,7 @@ class MainActivity : ComponentActivity() {
             var showSplash by rememberSaveable { mutableStateOf(true) }
 
             val downloadManager = (application as? CineFlowApplication)?.downloadManager
+            val importManager = (application as? CineFlowApplication)?.importManager
 
             CineFlowTheme(
                 themeMode = themeMode,
@@ -105,6 +106,7 @@ class MainActivity : ComponentActivity() {
                         CineFlowAppRoot(
                             repository = repository,
                             downloadManager = downloadManager,
+                            importManager = importManager,
                             themeMode = themeMode,
                             enableDynamicColor = enableDynamicColor,
                             reducedMotion = reducedMotion,
@@ -137,6 +139,7 @@ class MainActivity : ComponentActivity() {
 fun CineFlowAppRoot(
     repository: StreamingRepository,
     downloadManager: CineFlowDownloadManager? = null,
+    importManager: com.cineflow.tube.data.repository.YouTubeImportManager? = null,
     themeMode: AppThemeMode,
     enableDynamicColor: Boolean,
     reducedMotion: Boolean,
@@ -208,6 +211,7 @@ fun CineFlowAppRoot(
                         isSearchActive = isSearchActive,
                         repository = repository,
                         downloadManager = downloadManager,
+                        importManager = importManager,
                         themeMode = themeMode,
                         enableDynamicColor = enableDynamicColor,
                         reducedMotion = reducedMotion,
@@ -235,6 +239,7 @@ fun CineFlowAppRoot(
                     isSearchActive = isSearchActive,
                     repository = repository,
                     downloadManager = downloadManager,
+                    importManager = importManager,
                     themeMode = themeMode,
                     enableDynamicColor = enableDynamicColor,
                     reducedMotion = reducedMotion,
@@ -286,6 +291,7 @@ private fun DestinationContent(
     isSearchActive: Boolean,
     repository: StreamingRepository,
     downloadManager: CineFlowDownloadManager? = null,
+    importManager: com.cineflow.tube.data.repository.YouTubeImportManager? = null,
     themeMode: AppThemeMode,
     enableDynamicColor: Boolean,
     reducedMotion: Boolean,
@@ -330,6 +336,7 @@ private fun DestinationContent(
             NavDestination.SUBSCRIPTIONS -> {
                 SubscriptionsScreen(
                     listState = subscriptionsListState,
+                    importManager = importManager,
                     onVideoClick = onOpenVideo,
                     onExploreClick = { onNavigate(NavDestination.HOME) }
                 )
@@ -339,6 +346,7 @@ private fun DestinationContent(
                     repository = repository,
                     listState = yourSpaceListState,
                     downloadManager = downloadManager,
+                    importManager = importManager,
                     currentThemeMode = themeMode,
                     enableDynamicColor = enableDynamicColor,
                     reducedMotion = reducedMotion,

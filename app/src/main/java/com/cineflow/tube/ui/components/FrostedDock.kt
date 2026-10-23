@@ -27,6 +27,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.AccountCircle
 import androidx.compose.material.icons.rounded.Home
 import androidx.compose.material.icons.rounded.PlayCircle
+import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material.icons.rounded.Subscriptions
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -50,13 +51,12 @@ import kotlin.math.roundToInt
 
 enum class NavDestination(
     val title: String,
-    val symbol: String,
     val icon: ImageVector
 ) {
-    HOME("Home", "⌂", Icons.Rounded.Home),
-    SHORTS("Shorts", "▣", Icons.Rounded.PlayCircle),
-    SUBSCRIPTIONS("Subscriptions", "▤", Icons.Rounded.Subscriptions),
-    YOU("You", "◉", Icons.Rounded.AccountCircle)
+    HOME("Home", Icons.Rounded.Home),
+    SHORTS("Shorts", Icons.Rounded.PlayCircle),
+    SUBSCRIPTIONS("Subscriptions", Icons.Rounded.Subscriptions),
+    YOU("Settings", Icons.Rounded.Settings)
 }
 
 /**
@@ -130,11 +130,11 @@ fun FrostedBottomDock(
                             horizontalAlignment = Alignment.CenterHorizontally,
                             verticalArrangement = Arrangement.Center
                         ) {
-                            Text(
-                                text = destination.symbol,
-                                fontSize = 20.sp,
-                                fontWeight = if (isSelected) FontWeight.ExtraBold else FontWeight.Normal,
-                                color = tintColor
+                            Icon(
+                                imageVector = destination.icon,
+                                contentDescription = destination.title,
+                                modifier = Modifier.size(24.dp),
+                                tint = tintColor
                             )
                             Spacer(modifier = Modifier.height(2.dp))
                             Text(
@@ -178,15 +178,17 @@ fun FrostedNavRail(
                 .navigationBarsPadding()
                 .padding(horizontal = 14.dp, vertical = 18.dp)
         ) {
-            // Brand Mark: ▶ cineflow tube
+            // Brand Mark: ▶ cineflow tube (Single line, strictly no wrap)
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.padding(horizontal = 8.dp, vertical = 12.dp)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 4.dp, vertical = 12.dp)
             ) {
                 Box(
                     modifier = Modifier
-                        .size(36.dp)
-                        .clip(RoundedCornerShape(12.dp))
+                        .size(34.dp)
+                        .clip(RoundedCornerShape(11.dp))
                         .background(
                             Brush.linearGradient(
                                 listOf(Color(0xFF9FD4FF), Color(0xFF4B8FF5))
@@ -197,27 +199,33 @@ fun FrostedNavRail(
                     Text(
                         text = "▶",
                         color = Color.White,
-                        fontSize = 16.sp,
+                        fontSize = 15.sp,
                         fontWeight = FontWeight.Bold
                     )
                 }
 
-                Spacer(modifier = Modifier.width(10.dp))
+                Spacer(modifier = Modifier.width(8.dp))
 
-                Row {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
                     Text(
                         text = "cineflow",
-                        fontSize = 18.sp,
+                        fontSize = 17.sp,
                         fontWeight = FontWeight.Bold,
-                        color = CineFlow.tokens.ink
+                        color = CineFlow.tokens.ink,
+                        maxLines = 1,
+                        softWrap = false
                     )
                     Spacer(modifier = Modifier.width(3.dp))
                     Text(
                         text = "tube",
-                        fontSize = 18.sp,
+                        fontSize = 17.sp,
                         fontStyle = FontStyle.Italic,
                         fontWeight = FontWeight.Bold,
-                        color = CineFlow.tokens.accent
+                        color = CineFlow.tokens.accent,
+                        maxLines = 1,
+                        softWrap = false
                     )
                 }
             }
@@ -237,43 +245,39 @@ fun FrostedNavRail(
                         .clip(RoundedCornerShape(16.dp))
                         .background(backgroundColor)
                         .springPress { onDestinationSelected(destination) }
-                        .padding(horizontal = 16.dp, vertical = 13.dp),
+                        .padding(horizontal = 14.dp, vertical = 12.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(
-                        text = destination.symbol,
-                        fontSize = 20.sp,
-                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                        color = contentColor
+                    Icon(
+                        imageVector = destination.icon,
+                        contentDescription = destination.title,
+                        tint = contentColor,
+                        modifier = Modifier.size(22.dp)
                     )
-                    Spacer(modifier = Modifier.width(16.dp))
+                    Spacer(modifier = Modifier.width(14.dp))
                     Text(
                         text = destination.title,
                         fontSize = 14.sp,
                         fontWeight = if (isSelected) FontWeight.Bold else FontWeight.SemiBold,
-                        color = contentColor
+                        color = contentColor,
+                        maxLines = 1
                     )
                 }
             }
 
             Spacer(modifier = Modifier.weight(1f))
 
-            // Side Foot (from prototype)
+            // Side Foot
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 8.dp, vertical = 12.dp)
+                    .padding(horizontal = 6.dp, vertical = 12.dp)
             ) {
                 Text(
-                    text = "✦ Your videos. Beautifully in motion.",
+                    text = "CineFlow Tube by Jadzumi",
                     fontSize = 11.sp,
-                    color = CineFlow.tokens.muted,
-                    lineHeight = 16.sp
-                )
-                Text(
-                    text = "CineFlow Tube · by Jadzumi",
-                    fontSize = 10.sp,
-                    color = CineFlow.tokens.muted.copy(alpha = 0.7f)
+                    fontWeight = FontWeight.Medium,
+                    color = CineFlow.tokens.muted
                 )
             }
         }

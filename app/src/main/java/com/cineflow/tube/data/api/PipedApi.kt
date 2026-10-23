@@ -16,29 +16,49 @@ import java.util.concurrent.TimeUnit
 
 class PipedApi(
     private val client: OkHttpClient = OkHttpClient.Builder()
-        .connectTimeout(8, TimeUnit.SECONDS)
-        .readTimeout(12, TimeUnit.SECONDS)
+        .connectTimeout(7, TimeUnit.SECONDS)
+        .readTimeout(10, TimeUnit.SECONDS)
         .build()
 ) {
     companion object {
         val DEFAULT_INSTANCES = listOf(
-            "https://pipedapi.kavin.rocks",
-            "https://api.piped.private.coffee",
-            "https://piped-api.lunar.icu",
-            "https://api.piped.projectsegfau.lt"
+            "https://api.piped.projectsegfau.lt",
+            "https://pipedapi.tokhmi.xyz",
+            "https://piped.video",
+            "https://pipedapi.drgns.space"
         )
     }
 
     @Volatile
     var currentBaseUrl: String = DEFAULT_INSTANCES.first()
+    @Volatile
+    private var instanceIndex: Int = 0
 
-    suspend fun getTrending(region: String = "US"): List<StreamItem> = withContext(Dispatchers.IO) {
-        val url = "$currentBaseUrl/trending?region=$region"
+    suspend fun <T> executeWithFailover(block: suspend (baseUrl: String) -> T): T = withContext(Dispatchers.IO) {
+        var lastException: Exception? = null
+        val total = DEFAULT_INSTANCES.size
+        for (i in 0 until total) {
+            val candidateIndex = (instanceIndex + i) % total
+            val candidateUrl = DEFAULT_INSTANCES[candidateIndex]
+            try {
+                val result = block(candidateUrl)
+                instanceIndex = candidateIndex
+                currentBaseUrl = candidateUrl
+                return@withContext result
+            } catch (e: Exception) {
+                lastException = e
+            }
+        }
+        throw lastException ?: Exception("All Piped instances failed")
+    }
+
+    suspend fun getTrending(region: String = "US"): List<StreamItem> = executeWithFailover { baseUrl ->
+        val url = "$baseUrl/trending?region=$region"
         val request = Request.Builder().url(url).build()
         val response = client.newCall(request).execute()
         if (!response.isSuccessful) throw Exception("Piped trending error: HTTP ${response.code}")
 
-        val body = response.body?.string() ?: return@withContext emptyList()
+        val body = response.body?.string() ?: return@executeWithFailover emptyList()
         val jsonArray = JSONArray(body)
         val items = mutableListOf<StreamItem>()
 
@@ -68,8 +88,8 @@ class PipedApi(
         items
     }
 
-    suspend fun getStreamDetails(id: String): StreamDetails = withContext(Dispatchers.IO) {
-        val url = "$currentBaseUrl/streams/$id"
+    suspend fun getStreamDetails(id: String): StreamDetails = executeWithFailover { baseUrl ->
+        val url = "$baseUrl/streams/$id"
         val request = Request.Builder().url(url).build()
         val response = client.newCall(request).execute()
         if (!response.isSuccessful) throw Exception("Piped stream error: HTTP ${response.code}")
@@ -185,14 +205,14 @@ class PipedApi(
         )
     }
 
-    suspend fun search(query: String, filter: String = "all"): List<StreamItem> = withContext(Dispatchers.IO) {
+    suspend fun search(query: String, filter: String = "all"): List<StreamItem> = executeWithFailover { baseUrl ->
         val encoded = java.net.URLEncoder.encode(query, "UTF-8")
-        val url = "$currentBaseUrl/search?q=$encoded&filter=$filter"
+        val url = "$baseUrl/search?q=$encoded&filter=$filter"
         val request = Request.Builder().url(url).build()
         val response = client.newCall(request).execute()
         if (!response.isSuccessful) throw Exception("Piped search error: HTTP ${response.code}")
 
-        val body = response.body?.string() ?: return@withContext emptyList()
+        val body = response.body?.string() ?: return@executeWithFailover emptyList()
         val obj = JSONObject(body)
         val jsonArray = obj.optJSONArray("items") ?: JSONArray()
         val items = mutableListOf<StreamItem>()

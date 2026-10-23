@@ -128,46 +128,56 @@ fun TrendingFeedScreen(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Brand Mark (▶ cineflow tube)
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Box(
-                        modifier = Modifier
-                            .size(34.dp)
-                            .clip(RoundedCornerShape(11.dp))
-                            .background(
-                                Brush.linearGradient(
-                                    listOf(Color(0xFF9FD4FF), Color(0xFF4B8FF5))
-                                )
-                            ),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = "▶",
-                            color = Color.White,
-                            fontSize = 15.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.width(9.dp))
-
+                if (!isTabletWide) {
+                    // Brand Mark (▶ cineflow tube) - Phone only (Rail handles tablet)
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(
-                            text = "cineflow",
-                            fontSize = 20.sp,
-                            fontWeight = FontWeight.ExtraBold,
-                            letterSpacing = (-0.8).sp,
-                            color = CineFlow.tokens.ink
-                        )
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text(
-                            text = "tube",
-                            fontSize = 20.sp,
-                            fontStyle = FontStyle.Italic,
-                            fontWeight = FontWeight.Bold,
-                            color = CineFlow.tokens.accent
-                        )
+                        Box(
+                            modifier = Modifier
+                                .size(34.dp)
+                                .clip(RoundedCornerShape(11.dp))
+                                .background(
+                                    Brush.linearGradient(
+                                        listOf(Color(0xFF9FD4FF), Color(0xFF4B8FF5))
+                                    )
+                                ),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "▶",
+                                color = Color.White,
+                                fontSize = 15.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.width(9.dp))
+
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                text = "cineflow",
+                                fontSize = 20.sp,
+                                fontWeight = FontWeight.ExtraBold,
+                                letterSpacing = (-0.8).sp,
+                                color = CineFlow.tokens.ink
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = "tube",
+                                fontSize = 20.sp,
+                                fontStyle = FontStyle.Italic,
+                                fontWeight = FontWeight.Bold,
+                                color = CineFlow.tokens.accent
+                            )
+                        }
                     }
+                } else {
+                    // Tablet: NavRail has the brand crest, so show section title here
+                    Text(
+                        text = "Discover",
+                        fontSize = 22.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = CineFlow.tokens.ink
+                    )
                 }
 
                 // Top Controls: Search, Theme, Profile (>= 48dp touch bounds)

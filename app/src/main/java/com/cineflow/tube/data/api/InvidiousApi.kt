@@ -16,29 +16,49 @@ import java.util.concurrent.TimeUnit
 
 class InvidiousApi(
     private val client: OkHttpClient = OkHttpClient.Builder()
-        .connectTimeout(8, TimeUnit.SECONDS)
-        .readTimeout(12, TimeUnit.SECONDS)
+        .connectTimeout(7, TimeUnit.SECONDS)
+        .readTimeout(10, TimeUnit.SECONDS)
         .build()
 ) {
     companion object {
         val DEFAULT_INSTANCES = listOf(
-            "https://invidious.nerdvpn.de",
-            "https://inv.nadeko.net",
             "https://yewtu.be",
-            "https://invidious.drgns.space"
+            "https://inv.nadeko.net",
+            "https://invidious.drgns.space",
+            "https://vid.puffyan.us"
         )
     }
 
     @Volatile
     var currentBaseUrl: String = DEFAULT_INSTANCES.first()
+    @Volatile
+    private var instanceIndex: Int = 0
 
-    suspend fun getTrending(): List<StreamItem> = withContext(Dispatchers.IO) {
-        val url = "$currentBaseUrl/api/v1/trending"
+    suspend fun <T> executeWithFailover(block: suspend (baseUrl: String) -> T): T = withContext(Dispatchers.IO) {
+        var lastException: Exception? = null
+        val total = DEFAULT_INSTANCES.size
+        for (i in 0 until total) {
+            val candidateIndex = (instanceIndex + i) % total
+            val candidateUrl = DEFAULT_INSTANCES[candidateIndex]
+            try {
+                val result = block(candidateUrl)
+                instanceIndex = candidateIndex
+                currentBaseUrl = candidateUrl
+                return@withContext result
+            } catch (e: Exception) {
+                lastException = e
+            }
+        }
+        throw lastException ?: Exception("All Invidious instances failed")
+    }
+
+    suspend fun getTrending(): List<StreamItem> = executeWithFailover { baseUrl ->
+        val url = "$baseUrl/api/v1/trending"
         val request = Request.Builder().url(url).build()
         val response = client.newCall(request).execute()
         if (!response.isSuccessful) throw Exception("Invidious trending error: HTTP ${response.code}")
 
-        val body = response.body?.string() ?: return@withContext emptyList()
+        val body = response.body?.string() ?: return@executeWithFailover emptyList()
         val jsonArray = JSONArray(body)
         val items = mutableListOf<StreamItem>()
 
@@ -68,8 +88,8 @@ class InvidiousApi(
         items
     }
 
-    suspend fun getStreamDetails(id: String): StreamDetails = withContext(Dispatchers.IO) {
-        val url = "$currentBaseUrl/api/v1/videos/$id"
+    suspend fun getStreamDetails(id: String): StreamDetails = executeWithFailover { baseUrl ->
+        val url = "$baseUrl/api/v1/videos/$id"
         val request = Request.Builder().url(url).build()
         val response = client.newCall(request).execute()
         if (!response.isSuccessful) throw Exception("Invidious video error: HTTP ${response.code}")
@@ -144,14 +164,14 @@ class InvidiousApi(
         )
     }
 
-    suspend fun search(query: String): List<StreamItem> = withContext(Dispatchers.IO) {
+    suspend fun search(query: String): List<StreamItem> = executeWithFailover { baseUrl ->
         val encoded = java.net.URLEncoder.encode(query, "UTF-8")
-        val url = "$currentBaseUrl/api/v1/search?q=$encoded&type=video"
+        val url = "$baseUrl/api/v1/search?q=$encoded&type=video"
         val request = Request.Builder().url(url).build()
         val response = client.newCall(request).execute()
         if (!response.isSuccessful) throw Exception("Invidious search error: HTTP ${response.code}")
 
-        val body = response.body?.string() ?: return@withContext emptyList()
+        val body = response.body?.string() ?: return@executeWithFailover emptyList()
         val jsonArray = JSONArray(body)
         val items = mutableListOf<StreamItem>()
 

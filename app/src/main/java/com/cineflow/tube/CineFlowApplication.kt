@@ -6,6 +6,7 @@ import coil.ImageLoaderFactory
 import coil.disk.DiskCache
 import coil.memory.MemoryCache
 import com.cineflow.tube.data.repository.CineFlowDownloadManager
+import com.cineflow.tube.data.repository.YouTubeImportManager
 
 class CineFlowApplication : Application(), ImageLoaderFactory {
 
@@ -13,9 +14,14 @@ class CineFlowApplication : Application(), ImageLoaderFactory {
     lateinit var downloadManager: CineFlowDownloadManager
         private set
 
+    /** App-scoped YouTube/NewPipe import manager */
+    lateinit var importManager: YouTubeImportManager
+        private set
+
     override fun onCreate() {
         super.onCreate()
         downloadManager = CineFlowDownloadManager(this)
+        importManager = YouTubeImportManager(this)
     }
 
     override fun newImageLoader(): ImageLoader {
