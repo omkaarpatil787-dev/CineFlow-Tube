@@ -1,0 +1,77 @@
+name: Build CineFlow Tube APK
+
+on:
+  push:
+    branches: [ "**" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+
+    - name: Set up Java 17
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'temurin'
+        java-version: '17'
+        cache: 'gradle'
+
+    - name: Accept Licenses & Install Android 36
+      run: |
+        yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
+        $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "platforms;android-36" "build-tools;35.0.0"
+
+    - name: Fix Windows Line Endings & Permissions
+      run: |
+        sed -i 's/\r$//' gradlew
+        chmod +x gradlew
+
+    - name: Run Unit Tests & Build APKs
+      run: |
+        set -o pipefail
+        ./gradlew test assembleRelease assembleDebug --no-daemon --stacktrace 2>&1 | tee build.log
+
+    - name: Print Build Failure Log
+      if: failure()
+      run: |
+        echo "=== GRADLE FAILURE LOG ==="
+        tail -n 150 build.log
+
+    - name: Save Release APK (v1.0.0 Optimized & Shrunk)
+      uses: actions/upload-artifact@v4
+      with:
+        name: CineFlow-Tube-v1.0.0-Release
+        path: app/build/outputs/apk/release/*.apk
+
+    - name: Save Debug APK (v1.0.0)
+      uses: actions/upload-artifact@v4
+      with:
+        name: CineFlow-Tube-v1.0.0-Debug
+        path: app/build/outputs/apk/debug/*.apk
+
+    - name: Get App Version
+      if: github.ref == 'refs/heads/main'
+      run: |
+        VERSION=$(grep 'versionName = ' app/build.gradle.kts | cut -d '"' -f 2)
+        echo "APP_VERSION=v$VERSION" >> $GITHUB_ENV
+
+    - name: Prepare Named Release APK
+      if: github.ref == 'refs/heads/main'
+      run: |
+        cp app/build/outputs/apk/release/*.apk CineFlow-Tube-${{ env.APP_VERSION }}.apk
+
+    - name: Auto-Update GitHub Release with APK
+      if: github.ref == 'refs/heads/main'
+      uses: softprops/action-gh-release@v2
+      with:
+        tag_name: ${{ env.APP_VERSION }}
+        name: ${{ env.APP_VERSION }} ✨
+        files: CineFlow-Tube-${{ env.APP_VERSION }}.apk
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
