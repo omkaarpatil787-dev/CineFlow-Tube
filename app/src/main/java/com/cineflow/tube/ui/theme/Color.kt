@@ -3,6 +3,7 @@ package com.cineflow.tube.ui.theme
 import androidx.compose.ui.graphics.Color
 
 // CineFlow Stream Azure & Electric Blue Signature Palette (from jadzumi_stream_v02.html)
+val CineRed = Color(0xFFFF3B30)
 val StreamAccentLight = Color(0xFF377CDD)       // Electric Azure
 val StreamAccentDark = Color(0xFF8EBCFF)        // Radiant Azure
 val StreamAccentAmoled = Color(0xFFA1C7FF)      // High-contrast Azure

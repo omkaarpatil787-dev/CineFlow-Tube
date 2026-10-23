@@ -119,6 +119,7 @@ data class StreamDetails(
     val uploaderName: String,
     val uploaderChannelId: String,
     val uploaderAvatarUrl: String? = null,
+    val thumbnailUrl: String = "",
     val uploaderSubscriberCount: String = "",
     val views: Long = 0,
     val viewsFormatted: String = "",

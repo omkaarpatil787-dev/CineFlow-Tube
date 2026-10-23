@@ -14,6 +14,8 @@ data class DislikeInfo(
     val viewCount: Long = 0
 )
 
+typealias RydVotes = DislikeInfo
+
 class ReturnYouTubeDislikeApi(
     private val client: OkHttpClient = OkHttpClient.Builder()
         .connectTimeout(5, TimeUnit.SECONDS)

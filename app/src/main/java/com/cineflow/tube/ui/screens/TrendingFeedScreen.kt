@@ -356,7 +356,7 @@ fun TrendingFeedScreen(
                             LazyVerticalGrid(
                                 columns = GridCells.Fixed(gridColumns),
                                 modifier = Modifier.fillMaxSize(),
-                                contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp).copy(bottom = 140.dp),
+                                contentPadding = PaddingValues(start = 16.dp, top = 8.dp, end = 16.dp, bottom = 140.dp),
                                 horizontalArrangement = Arrangement.spacedBy(16.dp),
                                 verticalArrangement = Arrangement.spacedBy(12.dp)
                             ) {

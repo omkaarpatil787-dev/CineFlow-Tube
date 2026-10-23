@@ -116,7 +116,7 @@ class StreamingRepository(
                     try { sponsorBlockApi.getSegments(videoId) } catch (_: Exception) { emptyList() }
                 }
                 val rydVotesDeferred = async {
-                    try { rydApi.getVotes(videoId) } catch (_: Exception) { ReturnYouTubeDislikeApi.RydVotes(0, 0, 0f) }
+                    try { rydApi.getVotes(videoId) } catch (_: Exception) { com.cineflow.tube.data.api.DislikeInfo() }
                 }
                 val commentsDeferred = async {
                     try { getComments(videoId) } catch (_: Exception) { emptyList() }

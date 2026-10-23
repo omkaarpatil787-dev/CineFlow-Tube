@@ -45,7 +45,7 @@ import com.cineflow.tube.ui.components.FrostedNavRail
 import com.cineflow.tube.ui.components.NavDestination
 import com.cineflow.tube.ui.player.CineFlowMiniplayerContainer
 import com.cineflow.tube.ui.player.MiniplayerMode
-import com.cineflow.tube.ui.screens.AppThemeMode
+import com.cineflow.tube.ui.theme.AppThemeMode
 import com.cineflow.tube.ui.screens.SearchScreen
 import com.cineflow.tube.ui.screens.ShortsScreen
 import com.cineflow.tube.ui.screens.SubscriptionsScreen
