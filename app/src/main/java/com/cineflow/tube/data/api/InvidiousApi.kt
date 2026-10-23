@@ -16,8 +16,8 @@ import java.util.concurrent.TimeUnit
 
 class InvidiousApi(
     private val client: OkHttpClient = OkHttpClient.Builder()
-        .connectTimeout(7, TimeUnit.SECONDS)
-        .readTimeout(10, TimeUnit.SECONDS)
+        .connectTimeout(4, TimeUnit.SECONDS)
+        .readTimeout(5, TimeUnit.SECONDS)
         .build()
 ) {
     companion object {

@@ -66,9 +66,6 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
-        val serviceIntent = Intent(this, CineFlowPlaybackService::class.java)
-        ContextCompat.startForegroundService(this, serviceIntent)
-
         val sessionToken = SessionToken(this, ComponentName(this, CineFlowPlaybackService::class.java))
         val controllerFuture = MediaController.Builder(this, sessionToken).buildAsync()
         controllerFuture.addListener({

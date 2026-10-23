@@ -95,22 +95,31 @@ class YouTubeImportManager(private val context: Context) {
             val content = BufferedReader(InputStreamReader(inputStream)).use { it.readText() }
             val trimmed = content.trim()
 
-            // 1. Check if it's a NewPipe JSON backup
+            // 1. Check if it's HTML format (Google Takeout subscriptions.html or watch-history.html)
+            if (trimmed.contains("<html", ignoreCase = true) ||
+                trimmed.contains("<!DOCTYPE", ignoreCase = true) ||
+                trimmed.contains("<body", ignoreCase = true) ||
+                (trimmed.contains("href=") && trimmed.contains("youtube.com"))) {
+                val htmlResult = importGoogleTakeoutHtml(trimmed)
+                if (htmlResult.success) return@withContext htmlResult
+            }
+
+            // 2. Check if it's a NewPipe JSON backup
             if (trimmed.startsWith("{") && trimmed.contains("\"subscriptions\"")) {
                 return@withContext importNewPipeJson(trimmed)
             }
 
-            // 2. Check if it's Google Takeout watch-history.json
+            // 3. Check if it's Google Takeout watch-history.json
             if (trimmed.startsWith("[") && (trimmed.contains("\"titleUrl\"") || trimmed.contains("\"header\""))) {
                 return@withContext importGoogleTakeoutWatchHistory(trimmed)
             }
 
-            // 3. Check if it's a Google Takeout CSV (Channel Id,Channel URL,Channel title)
+            // 4. Check if it's a Google Takeout CSV (Channel Id,Channel URL,Channel title)
             if (trimmed.contains("Channel Id") || trimmed.contains("channel_id") || trimmed.lines().any { it.contains("UC") && it.contains(",") }) {
                 return@withContext importGoogleTakeoutCsv(trimmed)
             }
 
-            // 4. Fallback: line-by-line CSV parser
+            // 5. Fallback: line-by-line CSV parser
             return@withContext importGenericCsv(trimmed)
         } catch (e: Exception) {
             ImportResult(false, 0, "Import failed: ${e.message}")
@@ -209,6 +218,60 @@ class YouTubeImportManager(private val context: Context) {
         val merged = (channels.values.toList() + _subscriptions.value).distinctBy { it.channelId }
         saveSubscriptions(merged)
         return ImportResult(true, channels.size, "Extracted & subscribed to ${channels.size} creators from your Google Takeout Watch History!")
+    }
+
+    private fun importGoogleTakeoutHtml(htmlText: String): ImportResult {
+        val channels = mutableMapOf<String, SubscribedChannel>()
+
+        // 1. Channel ID URLs: href="...youtube.com/channel/(UC...)"
+        val channelRegex = Regex("""href=["'][^"']*youtube\.com/channel/(UC[a-zA-Z0-9_-]{20,})[^"']*["'][^>]*>(.*?)</a>""", RegexOption.IGNORE_CASE)
+        for (match in channelRegex.findAll(htmlText)) {
+            val channelId = match.groupValues[1]
+            val rawName = match.groupValues[2]
+            val cleanName = cleanHtml(rawName).ifEmpty { "Channel $channelId" }
+            if (!channels.containsKey(channelId)) {
+                channels[channelId] = SubscribedChannel(
+                    channelId = channelId,
+                    channelName = cleanName,
+                    channelUrl = "https://youtube.com/channel/$channelId"
+                )
+            }
+        }
+
+        // 2. Handle URLs: href="...youtube.com/@([a-zA-Z0-9_.-]+)"
+        val handleRegex = Regex("""href=["'][^"']*youtube\.com/@([a-zA-Z0-9_.-]{3,})[^"']*["'][^>]*>(.*?)</a>""", RegexOption.IGNORE_CASE)
+        for (match in handleRegex.findAll(htmlText)) {
+            val handle = match.groupValues[1]
+            val rawName = match.groupValues[2]
+            val cleanName = cleanHtml(rawName).ifEmpty { "@$handle" }
+            val fakeId = "UC_$handle"
+            if (!channels.containsKey(fakeId) && !channels.values.any { it.channelName.equals(cleanName, ignoreCase = true) }) {
+                channels[fakeId] = SubscribedChannel(
+                    channelId = fakeId,
+                    channelName = cleanName,
+                    channelUrl = "https://youtube.com/@$handle"
+                )
+            }
+        }
+
+        if (channels.isEmpty()) {
+            return ImportResult(false, 0, "No YouTube channel links found in the HTML file")
+        }
+
+        val merged = (channels.values.toList() + _subscriptions.value).distinctBy { it.channelId }
+        saveSubscriptions(merged)
+        return ImportResult(true, channels.size, "Imported ${channels.size} creators from your Google Takeout HTML file!")
+    }
+
+    private fun cleanHtml(str: String): String {
+        return str.replace(Regex("<[^>]*>"), "")
+            .replace("&amp;", "&")
+            .replace("&lt;", "<")
+            .replace("&gt;", ">")
+            .replace("&quot;", "\"")
+            .replace("&#39;", "'")
+            .replace("&nbsp;", " ")
+            .trim()
     }
 
     private fun importGenericCsv(text: String): ImportResult {
