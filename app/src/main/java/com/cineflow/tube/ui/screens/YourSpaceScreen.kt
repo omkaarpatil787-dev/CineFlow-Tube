@@ -708,7 +708,7 @@ fun YouTubeImportCard(
 
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = "Import subscriptions from Google Takeout (subscriptions.csv) or NewPipe backup (JSON). 100% private, local on-device storage.",
+                text = "Import from Google Takeout (subscriptions.csv or watch-history.json) or NewPipe (JSON). 100% private & local.",
                 fontSize = 12.sp,
                 color = CineFlow.tokens.muted
             )

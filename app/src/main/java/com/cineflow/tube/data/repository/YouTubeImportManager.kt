@@ -100,12 +100,17 @@ class YouTubeImportManager(private val context: Context) {
                 return@withContext importNewPipeJson(trimmed)
             }
 
-            // 2. Check if it's a Google Takeout CSV (Channel Id,Channel URL,Channel title)
+            // 2. Check if it's Google Takeout watch-history.json
+            if (trimmed.startsWith("[") && (trimmed.contains("\"titleUrl\"") || trimmed.contains("\"header\""))) {
+                return@withContext importGoogleTakeoutWatchHistory(trimmed)
+            }
+
+            // 3. Check if it's a Google Takeout CSV (Channel Id,Channel URL,Channel title)
             if (trimmed.contains("Channel Id") || trimmed.contains("channel_id") || trimmed.lines().any { it.contains("UC") && it.contains(",") }) {
                 return@withContext importGoogleTakeoutCsv(trimmed)
             }
 
-            // 3. Fallback: line-by-line CSV parser
+            // 4. Fallback: line-by-line CSV parser
             return@withContext importGenericCsv(trimmed)
         } catch (e: Exception) {
             ImportResult(false, 0, "Import failed: ${e.message}")
@@ -171,6 +176,39 @@ class YouTubeImportManager(private val context: Context) {
         val merged = (imported + _subscriptions.value).distinctBy { it.channelId }
         saveSubscriptions(merged)
         return ImportResult(true, imported.size, "Imported ${imported.size} subscriptions from NewPipe backup!")
+    }
+
+    private fun importGoogleTakeoutWatchHistory(jsonText: String): ImportResult {
+        val array = JSONArray(jsonText)
+        val channels = mutableMapOf<String, SubscribedChannel>()
+
+        for (i in 0 until array.length()) {
+            val obj = array.getJSONObject(i)
+            val subtitles = obj.optJSONArray("subtitles") ?: continue
+            for (j in 0 until subtitles.length()) {
+                val sub = subtitles.getJSONObject(j)
+                val channelName = sub.optString("name", "").trim()
+                val channelUrl = sub.optString("url", "").trim()
+                if (channelName.isNotEmpty() && channelUrl.contains("/channel/")) {
+                    val channelId = channelUrl.substringAfter("/channel/").substringBefore("?")
+                    if (channelId.startsWith("UC") && !channels.containsKey(channelId)) {
+                        channels[channelId] = SubscribedChannel(
+                            channelId = channelId,
+                            channelName = channelName,
+                            channelUrl = channelUrl
+                        )
+                    }
+                }
+            }
+        }
+
+        if (channels.isEmpty()) {
+            return ImportResult(false, 0, "No channel entries found in watch-history.json")
+        }
+
+        val merged = (channels.values.toList() + _subscriptions.value).distinctBy { it.channelId }
+        saveSubscriptions(merged)
+        return ImportResult(true, channels.size, "Extracted & subscribed to ${channels.size} creators from your Google Takeout Watch History!")
     }
 
     private fun importGenericCsv(text: String): ImportResult {
