@@ -104,7 +104,7 @@ fun SubscriptionsScreen(
                                 .size(56.dp)
                                 .clip(CircleShape)
                                 .background(CineFlow.tokens.soft)
-                                .specularBorder(CircleShape, strokeWidth = 1.5.dp, color = CineFlow.tokens.accent)
+                                .specularBorder(CircleShape, width = 1.5.dp, color = CineFlow.tokens.accent)
                         ) {
                             if (!avatarUrl.isNullOrEmpty()) {
                                 SubcomposeAsyncImage(

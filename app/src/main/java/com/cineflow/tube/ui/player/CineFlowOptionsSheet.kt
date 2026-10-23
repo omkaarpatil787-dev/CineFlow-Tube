@@ -589,7 +589,7 @@ private fun ChoiceItem(
             .background(if (isSelected) Color(0xFF214A60) else Color(0x00000000))
             .specularBorder(
                 RoundedCornerShape(15.dp),
-                strokeWidth = if (isSelected) 1.dp else 0.dp
+                width = if (isSelected) 1.dp else 0.dp
             )
             .springPress(onClick = onClick)
             .padding(horizontal = 16.dp, vertical = 14.dp),

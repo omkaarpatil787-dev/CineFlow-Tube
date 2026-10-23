@@ -167,7 +167,7 @@ fun WavyProgressTimeline(
                     .wrapContentSize(Alignment.Center)
                     .clip(RoundedCornerShape(10.dp))
                     .background(Color(0xE6102D40))
-                    .specularBorder(RoundedCornerShape(10.dp), strokeWidth = 1.dp)
+                    .specularBorder(RoundedCornerShape(10.dp), width = 1.dp)
                     .padding(horizontal = 8.dp, vertical = 4.dp)
             ) {
                 Text(
