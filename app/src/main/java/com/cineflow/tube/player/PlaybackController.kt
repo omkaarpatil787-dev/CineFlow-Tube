@@ -170,6 +170,54 @@ object PlaybackController {
             .build()
     }
 
+    /**
+     * Play a locally downloaded file directly from disk.
+     * Bypasses all API/stream URL resolution — no network required.
+     * Used when a completed DownloadItem is tapped in YourSpaceScreen.
+     */
+    fun playOffline(
+        localFilePath: String,
+        title: String,
+        uploaderName: String,
+        durationSeconds: Long = 0L,
+        thumbnailUrl: String? = null
+    ) {
+        val p = exoPlayer ?: return
+
+        val metadata = MediaMetadata.Builder()
+            .setTitle(title)
+            .setArtist(uploaderName)
+            .setArtworkUri(thumbnailUrl?.let { Uri.parse(it) })
+            .build()
+
+        val mediaItem = MediaItem.Builder()
+            .setUri(localFilePath)
+            .setMediaMetadata(metadata)
+            .build()
+
+        p.setMediaItem(mediaItem)
+        p.prepare()
+        p.playWhenReady = true
+
+        _currentPositionMs.value = 0L
+
+        _state.value = _state.value.copy(
+            currentStream = StreamDetails(
+                id = "offline_${localFilePath.hashCode()}",
+                title = title,
+                description = "Playing offline from device storage",
+                uploaderName = uploaderName,
+                uploaderChannelId = "",
+                durationSeconds = durationSeconds,
+                uploaderAvatarUrl = thumbnailUrl
+            ),
+            selectedQuality = "Offline",
+            availableQualities = listOf("Offline"),
+            isAudioOnly = false,
+            durationMs = durationSeconds * 1000L
+        )
+    }
+
     fun togglePlayPause() {
         val p = exoPlayer ?: return
         if (p.isPlaying) {

@@ -1,5 +1,8 @@
 # Baseline Profile for CineFlow Tube
-# Optimizes critical user journeys: App startup, feed scrolling, and player initialization
+# Optimizes critical user journeys: App startup, feed scrolling, player initialization,
+# queue management, comments loading, download engine, and instance health pinging.
+
+# ── Application & Activity Launch ──────────────────────────────────────────────
 
 Lcom/cineflow/tube/CineFlowApplication;
 HSPLcom/cineflow/tube/CineFlowApplication;-><init>()V
@@ -9,10 +12,14 @@ HSPLcom/cineflow/tube/CineFlowApplication;->newImageLoader()Lcoil/ImageLoader;
 Lcom/cineflow/tube/MainActivity;
 HSPLcom/cineflow/tube/MainActivity;-><init>()V
 HSPLcom/cineflow/tube/MainActivity;->onCreate(Landroid/os/Bundle;)V
-HSPLcom/cineflow/tube/MainActivityKt;->CineFlowAppRoot(Lcom/cineflow/tube/data/repository/StreamingRepository;Lcom/cineflow/tube/ui/screens/AppThemeMode;ZZLkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function0;Landroidx/compose/runtime/Composer;II)V
+HSPLcom/cineflow/tube/MainActivityKt;->CineFlowAppRoot(Lcom/cineflow/tube/data/repository/StreamingRepository;Lcom/cineflow/tube/data/repository/CineFlowDownloadManager;Lcom/cineflow/tube/ui/screens/AppThemeMode;ZZLkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function0;Landroidx/compose/runtime/Composer;II)V
+
+# ── Splash Screen ──────────────────────────────────────────────────────────────
 
 Lcom/cineflow/tube/ui/splash/GlacierSplashScreenKt;
 HSPLcom/cineflow/tube/ui/splash/GlacierSplashScreenKt;->GlacierSplashScreen(Lcom/cineflow/tube/ui/screens/AppThemeMode;Lkotlin/jvm/functions/Function0;Landroidx/compose/runtime/Composer;II)V
+
+# ── Playback Service & Controller ──────────────────────────────────────────────
 
 Lcom/cineflow/tube/player/CineFlowPlaybackService;
 HSPLcom/cineflow/tube/player/CineFlowPlaybackService;-><init>()V
@@ -22,12 +29,35 @@ HSPLcom/cineflow/tube/player/CineFlowPlaybackService;->onGetSession(Landroidx/me
 Lcom/cineflow/tube/player/PlaybackController;
 HSPLcom/cineflow/tube/player/PlaybackController;->attachPlayer(Landroidx/media3/exoplayer/ExoPlayer;)V
 HSPLcom/cineflow/tube/player/PlaybackController;->play(Lcom/cineflow/tube/data/model/StreamDetails;Ljava/lang/String;Z)V
+HSPLcom/cineflow/tube/player/PlaybackController;->playOffline(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;JLjava/lang/String;)V
 HSPLcom/cineflow/tube/player/PlaybackController;->seekTo(J)V
 HSPLcom/cineflow/tube/player/PlaybackController;->togglePlayPause()V
+
+# ── Queue Manager ──────────────────────────────────────────────────────────────
+
+Lcom/cineflow/tube/player/QueueManager;
+HSPLcom/cineflow/tube/player/QueueManager;->addToQueue(Lcom/cineflow/tube/data/model/StreamItem;)V
+HSPLcom/cineflow/tube/player/QueueManager;->playNext(Lcom/cineflow/tube/data/model/StreamItem;)V
+HSPLcom/cineflow/tube/player/QueueManager;->advanceToNext()Lcom/cineflow/tube/data/model/StreamItem;
+HSPLcom/cineflow/tube/player/QueueManager;->jumpTo(I)Lcom/cineflow/tube/data/model/StreamItem;
+
+# ── Theater Player View & Components ──────────────────────────────────────────
 
 Lcom/cineflow/tube/ui/player/TheaterPlayerViewKt;
 HSPLcom/cineflow/tube/ui/player/TheaterPlayerViewKt;->TheaterPlayerView(Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function0;Landroidx/compose/ui/Modifier;Landroidx/compose/runtime/Composer;II)V
 HSPLcom/cineflow/tube/ui/player/WavyProgressTimelineKt;->WavyProgressTimeline(JJZLcom/cineflow/tube/player/TimelineStyle;Lkotlin/jvm/functions/Function1;Landroidx/compose/ui/Modifier;Landroidx/compose/runtime/Composer;II)V
+
+# ── Comments Bottom Sheet ──────────────────────────────────────────────────────
+
+Lcom/cineflow/tube/ui/player/CommentsBottomSheetKt;
+HSPLcom/cineflow/tube/ui/player/CommentsBottomSheetKt;->CommentsBottomSheet(Ljava/util/List;ZLkotlin/jvm/functions/Function0;Landroidx/compose/ui/Modifier;Landroidx/compose/runtime/Composer;II)V
+
+# ── Queue Bottom Sheet ─────────────────────────────────────────────────────────
+
+Lcom/cineflow/tube/ui/player/QueueBottomSheetKt;
+HSPLcom/cineflow/tube/ui/player/QueueBottomSheetKt;->QueueBottomSheet(ZLkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function1;Landroidx/compose/ui/Modifier;Landroidx/compose/runtime/Composer;II)V
+
+# ── Feed & Browsing Components ─────────────────────────────────────────────────
 
 Lcom/cineflow/tube/ui/components/VideoCardKt;
 HSPLcom/cineflow/tube/ui/components/VideoCardKt;->VideoCard(Lcom/cineflow/tube/data/model/StreamItem;Lkotlin/jvm/functions/Function0;Landroidx/compose/ui/Modifier;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function0;Landroidx/compose/runtime/Composer;II)V
@@ -36,5 +66,74 @@ Lcom/cineflow/tube/ui/components/FrostedDockKt;
 HSPLcom/cineflow/tube/ui/components/FrostedDockKt;->FrostedBottomDock(Lcom/cineflow/tube/ui/components/NavDestination;Lkotlin/jvm/functions/Function1;Landroidx/compose/ui/Modifier;Landroidx/compose/runtime/Composer;II)V
 HSPLcom/cineflow/tube/ui/components/FrostedDockKt;->FrostedNavRail(Lcom/cineflow/tube/ui/components/NavDestination;Lkotlin/jvm/functions/Function1;Landroidx/compose/ui/Modifier;Landroidx/compose/runtime/Composer;II)V
 
+# ── Motion & Theme ─────────────────────────────────────────────────────────────
+
 Lcom/cineflow/tube/ui/theme/MotionKt;
 HSPLcom/cineflow/tube/ui/theme/MotionKt;->springPress(Landroidx/compose/ui/Modifier;ZFLkotlin/jvm/functions/Function0;)Landroidx/compose/ui/Modifier;
+
+Lcom/cineflow/tube/ui/theme/ThemeKt;
+HSPLcom/cineflow/tube/ui/theme/ThemeKt;->CineFlowTheme(Lcom/cineflow/tube/ui/screens/AppThemeMode;ZZLkotlin/jvm/functions/Function2;Landroidx/compose/runtime/Composer;II)V
+
+# ── Download Manager ──────────────────────────────────────────────────────────
+
+Lcom/cineflow/tube/data/repository/CineFlowDownloadManager;
+HSPLcom/cineflow/tube/data/repository/CineFlowDownloadManager;-><init>(Landroid/content/Context;)V
+HSPLcom/cineflow/tube/data/repository/CineFlowDownloadManager;->startDownload(Lcom/cineflow/tube/data/model/StreamDetails;Ljava/lang/String;)V
+HSPLcom/cineflow/tube/data/repository/CineFlowDownloadManager;->localPathFor(Ljava/lang/String;)Ljava/lang/String;
+
+# ── Instance Health Manager ───────────────────────────────────────────────────
+
+Lcom/cineflow/tube/data/repository/InstanceHealthManager;
+HSPLcom/cineflow/tube/data/repository/InstanceHealthManager;-><init>(Lokhttp3/OkHttpClient;)V
+HSPLcom/cineflow/tube/data/repository/InstanceHealthManager;->testAllInstances(Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+HSPLcom/cineflow/tube/data/repository/InstanceHealthManager;->getFastestInstance(Lcom/cineflow/tube/data/repository/BackendType;)Lcom/cineflow/tube/data/model/StreamingInstance;
+
+# ── Streaming Repository & APIs ───────────────────────────────────────────────
+
+Lcom/cineflow/tube/data/repository/StreamingRepository;
+HSPLcom/cineflow/tube/data/repository/StreamingRepository;-><init>(Lcom/cineflow/tube/data/api/PipedApi;Lcom/cineflow/tube/data/api/InvidiousApi;Lcom/cineflow/tube/data/api/SponsorBlockApi;Lcom/cineflow/tube/data/api/ReturnYouTubeDislikeApi;)V
+HSPLcom/cineflow/tube/data/repository/StreamingRepository;->getTrending(ILkotlin/coroutines/Continuation;)Ljava/lang/Object;
+HSPLcom/cineflow/tube/data/repository/StreamingRepository;->getStreamDetails(Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+HSPLcom/cineflow/tube/data/repository/StreamingRepository;->searchStreams(Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+
+# ── Search Screen ─────────────────────────────────────────────────────────────
+
+Lcom/cineflow/tube/ui/screens/SearchScreenKt;
+HSPLcom/cineflow/tube/ui/screens/SearchScreenKt;->SearchScreen(Lcom/cineflow/tube/data/repository/StreamingRepository;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function1;Landroidx/compose/runtime/Composer;I)V
+
+# ── Trending Feed Screen ──────────────────────────────────────────────────────
+
+Lcom/cineflow/tube/ui/screens/TrendingFeedScreenKt;
+HSPLcom/cineflow/tube/ui/screens/TrendingFeedScreenKt;->TrendingFeedScreen(Lcom/cineflow/tube/data/repository/StreamingRepository;Landroidx/compose/foundation/lazy/LazyListState;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function0;Landroidx/compose/runtime/Composer;II)V
+
+# ── Your Space / Settings Screen ──────────────────────────────────────────────
+
+Lcom/cineflow/tube/ui/screens/YourSpaceScreenKt;
+HSPLcom/cineflow/tube/ui/screens/YourSpaceScreenKt;->YourSpaceScreen(Lcom/cineflow/tube/data/repository/StreamingRepository;Landroidx/compose/foundation/lazy/LazyListState;Ljava/util/List;Lcom/cineflow/tube/data/repository/CineFlowDownloadManager;Lcom/cineflow/tube/ui/screens/AppThemeMode;ZZLkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function0;Landroidx/compose/ui/Modifier;Landroidx/compose/runtime/Composer;III)V
+
+# ── Downloads Section ─────────────────────────────────────────────────────────
+
+Lcom/cineflow/tube/ui/screens/DownloadsSectionKt;
+HSPLcom/cineflow/tube/ui/screens/DownloadsSectionKt;->DownloadsSection(Lcom/cineflow/tube/data/repository/CineFlowDownloadManager;Lkotlin/jvm/functions/Function1;Landroidx/compose/ui/Modifier;Landroidx/compose/runtime/Composer;II)V
+
+# ── Instance Selector Section ─────────────────────────────────────────────────
+
+Lcom/cineflow/tube/ui/screens/InstanceSelectorSectionKt;
+HSPLcom/cineflow/tube/ui/screens/InstanceSelectorSectionKt;->InstanceSelectorSection(Lcom/cineflow/tube/data/repository/StreamingRepository;Landroidx/compose/ui/Modifier;Landroidx/compose/runtime/Composer;II)V
+
+# ── Miniplayer ────────────────────────────────────────────────────────────────
+
+Lcom/cineflow/tube/ui/player/CineFlowMiniplayerKt;
+HSPLcom/cineflow/tube/ui/player/CineFlowMiniplayerKt;->CineFlowMiniplayerContainer(Lcom/cineflow/tube/ui/player/MiniplayerMode;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function0;Landroidx/compose/runtime/Composer;II)V
+
+# ── State Components ──────────────────────────────────────────────────────────
+
+Lcom/cineflow/tube/ui/components/CineFlowStatesKt;
+HSPLcom/cineflow/tube/ui/components/CineFlowStatesKt;->CineFlowSkeletonCard(Landroidx/compose/ui/Modifier;Landroidx/compose/runtime/Composer;II)V
+HSPLcom/cineflow/tube/ui/components/CineFlowStatesKt;->CineFlowLoadingView(Ljava/lang/String;Landroidx/compose/ui/Modifier;Landroidx/compose/runtime/Composer;II)V
+HSPLcom/cineflow/tube/ui/components/CineFlowStatesKt;->CineFlowErrorView(Ljava/lang/String;Ljava/lang/String;Lkotlin/jvm/functions/Function0;Landroidx/compose/ui/Modifier;Landroidx/compose/runtime/Composer;II)V
+
+# ── Options Sheet ─────────────────────────────────────────────────────────────
+
+Lcom/cineflow/tube/ui/player/CineFlowOptionsSheetKt;
+HSPLcom/cineflow/tube/ui/player/CineFlowOptionsSheetKt;->CineFlowOptionsSheet(ZLcom/cineflow/tube/player/PlaybackState;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function1;Lcom/cineflow/tube/ui/player/PickerCategory;Landroidx/compose/runtime/Composer;II)V

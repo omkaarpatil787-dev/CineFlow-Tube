@@ -200,9 +200,32 @@ fun YourSpaceScreen(
                         Column(modifier = Modifier.padding(18.dp)) {
                             DownloadsSection(
                                 downloadManager = downloadManager,
-                                onPlayOffline = { /* offline playback handled in MainActivity */ }
+                                onPlayOffline = { dlItem ->
+                                    if (dlItem.localFilePath != null) {
+                                        PlaybackController.playOffline(
+                                            localFilePath = dlItem.localFilePath,
+                                            title = dlItem.title,
+                                            uploaderName = dlItem.uploaderName,
+                                            thumbnailUrl = dlItem.thumbnailUrl
+                                        )
+                                    }
+                                }
                             )
                         }
+                    }
+                }
+            }
+
+            // Instance Selector & Live Ping Tester
+            item {
+                FrostedSurface(
+                    shape = RoundedCornerShape(22.dp),
+                    backgroundColor = CineFlow.tokens.surface
+                ) {
+                    Column(modifier = Modifier.padding(18.dp)) {
+                        InstanceSelectorSection(
+                            repository = repository
+                        )
                     }
                 }
             }
