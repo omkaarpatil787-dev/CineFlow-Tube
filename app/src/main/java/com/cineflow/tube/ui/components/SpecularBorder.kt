@@ -22,10 +22,3 @@ fun Modifier.specularBorder(
     color = color,
     shape = shape
 )
-
-@Composable
-fun Modifier.specularBorder(
-    shape: Shape,
-    strokeWidth: Dp,
-    color: Color = CineFlow.tokens.specularRimColor
-): Modifier = this.specularBorder(shape = shape, width = strokeWidth, color = color)

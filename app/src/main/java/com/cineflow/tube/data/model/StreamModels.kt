@@ -123,6 +123,7 @@ data class StreamDetails(
     val uploaderSubscriberCount: String = "",
     val views: Long = 0,
     val viewsFormatted: String = "",
+    val uploadedDateFormatted: String = "",
     val likes: Long = 0,
     val dislikes: Long = 0,
     val durationSeconds: Long = 0,

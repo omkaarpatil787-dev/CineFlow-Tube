@@ -76,8 +76,8 @@ private fun GlacierAtmosphereBackground(
 ) {
     val (baseColor, glowStrength) = when (themeMode) {
         AppThemeMode.LIGHT -> GlacierLightBase to 0.72f
-        AppThemeMode.DARK -> GlacierDarkBase to (0.72f * 0.60f)
         AppThemeMode.AMOLED -> GlacierAmoledBase to (0.72f * 0.34f)
+        AppThemeMode.DARK, AppThemeMode.SYSTEM -> GlacierDarkBase to (0.72f * 0.60f)
     }
 
     Canvas(modifier = modifier.fillMaxSize()) {
@@ -155,8 +155,8 @@ fun GlacierSplashScreen(
 
     val inkColor = when (themeMode) {
         AppThemeMode.LIGHT -> GlacierLightInk
-        AppThemeMode.DARK -> GlacierDarkInk
         AppThemeMode.AMOLED -> GlacierAmoledInk
+        AppThemeMode.DARK, AppThemeMode.SYSTEM -> GlacierDarkInk
     }
 
     // Atmospheric Gentle Floating Drift (120 FPS Infinite Loop)
